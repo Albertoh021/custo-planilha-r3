@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - 10/03/2026</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 1rem; padding: 1.5rem; }
+    .glass-header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid #334155; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="h-full overflow-auto">
+
+  <header class="glass-header sticky top-0 z-50 px-6 py-4">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4 max-w-7xl mx-auto">
+      <div>
+        <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+          <svg class="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          LogisDaily
+        </h1>
+        <p class="text-sm text-slate-400">Dados Consolidados do dia 10/03/2026</p>
+      </div>
+      <div class="px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-semibold flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Sistema Integrado Ativo
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-6 space-y-6">
+
+    <div id="kpi-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-green-500/10 rounded-bl-full"></div>
+        <p class="text-sm text-slate-400 font-medium">Faturamento Total</p>
+        <p id="kpi-faturado" class="text-3xl font-bold text-white mt-2">--</p>
+      </div>
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-red-500/10 rounded-bl-full"></div>
+        <p class="text-sm text-slate-400 font-medium">Custo Geral</p>
+        <p id="kpi-custo" class="text-3xl font-bold text-white mt-2">--</p>
+        <p id="kpi-perc-custo" class="text-xs text-red-400 mt-1">--</p>
+      </div>
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-bl-full"></div>
+        <p class="text-sm text-slate-400 font-medium">Margem Bruta / Lucro</p>
+        <p id="kpi-lucro" class="text-3xl font-bold text-blue-400 mt-2">--</p>
+        <p id="kpi-perc-margem" class="text-xs text-blue-400 mt-1">--</p>
+      </div>
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-16 h-16 bg-purple-500/10 rounded-bl-full"></div>
+        <p class="text-sm text-slate-400 font-medium">SLA (Performance)</p>
+        <p id="kpi-sla" class="text-3xl font-bold text-white mt-2">--</p>
+        <div class="flex gap-4 mt-1">
+          <p class="text-xs text-slate-400">Tk Faturado: <span id="kpi-tk-fat" class="text-white">--</span></p>
+          <p class="text-xs text-slate-400">Tk Custo: <span id="kpi-tk-custo" class="text-white">--</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="charts-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <div class="card lg:col-span-1">
+        <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-2">Distribuição da Frota</h3>
+        <div class="space-y-4" id="frota-container">
+          </div>
+      </div>
+
+      <div class="card lg:col-span-2">
+        <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-2">Desempenho por Categoria de Veículo</h3>
+        <div class="h-64">
+          <canvas id="chart-categorias"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div id="table-container" class="card">
+      <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
+        <h3 class="text-lg font-semibold text-white">Detalhamento Operacional (Motoristas)</h3>
+        <input type="text" id="search-driver" onkeyup="filterTable()" placeholder="Buscar motorista..." class="bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 w-64">
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="text-slate-400 text-sm border-b border-slate-700">
+              <th class="pb-3 font-medium">Motorista</th>
+              <th class="pb-3 font-medium">Tipo</th>
+              <th class="pb-3 font-medium">Veículo</th>
+              <th class="pb-3 font-medium">Contrato</th>
+              <th class="pb-3 font-medium text-right">Valor Custo</th>
+            </tr>
+          </thead>
+          <tbody id="drivers-table" class="divide-y divide-slate-800 text-sm">
+            </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Seus dados exatos processados diretamente das planilhas!
+    const db = {"resumo":{"faturado":50098.61,"custo":28686.5,"percCusto":0.5726,"percMargem":0.4274,"sla":0.9812,"tkFat":12.28,"tkCusto":7.03,"motTotal":146,"motPacote":75,"motDiaria":57,"motColeta":3},"motoristas":[{"nome":"MRJG 1659 - EDUARDO OLIVEIRA DO NASCIMENTO","tipo":"DIÁRIA","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":252.0},{"nome":"MRJG 1759 - YGOR NERY BATISTA","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":422.0},{"nome":"MRJG 1782 - ANDERTON MEDEIROS DE SANTANA","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":196.5},{"nome":"MRJG 2056-MARLON FERREIRA RIBEIRO","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":182.5},{"nome":"MRJG 2100-ANA CAROLINA DE MELO TORRES","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":148.0},{"nome":"MRJG 2114-JOSE CARLOS MIRANDA DE OLIVEIRA","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":203.5},{"nome":"MRJG 2122 -MICHEL SILVA DA CONCEICAO","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":118.0},{"nome":"MRJG 2131- ISABELA CRISTINA GRANTHOM NASCIMENTO","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":125.0},{"nome":"MRJG0169-WALLACE DA CRUZ COUTINHO","tipo":"PACOTE","veiculo":"CARRO","contrato":"GROWTH SUPLEMENTOS","valor":30.0},{"nome":"MRJG0442-MARCELO ANACLETO DE SOUSA","tipo":"PACOTE","veiculo":"CARRO","contrato":"GROWTH SUPLEMENTOS","valor":216.0},{"nome":"MRJG061-WAGNER ALVES DOS SANTOS","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":202.5},{"nome":"MRJG1013- ENDERSON NUNES DA SILVA","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":160.0},{"nome":"MRJG1042 - ROMULO ALVES MILLIOLE DE CARVALHO","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":298.0},{"nome":"MRJG1055- DAVI LUCIEM CALHEIROS FERREIRA","tipo":"DIÁRIA","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":222.0},{"nome":"MRJG1084- TIAGO OLIVEIRA RIOS DOS SANTOS","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":134.0},{"nome":"MRJG1091 - PATRICK CORREA NASCIMENTO DE ARAUJO","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":320.0},{"nome":"MRJG1105 - ALEXSSANDRO DE ARAUJO FELICIO DA SILVA","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":140.5},{"nome":"MRJG1166 - ANDRE DA SILVA SIMAS","tipo":"PACOTE","veiculo":"CARRO","contrato":"GROWTH SUPLEMENTOS","valor":5.0},{"nome":"MRJG1172 - CARLOS ANTONIO CHAGAS DA SILVA","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":217.5},{"nome":"MRJG1255- FILIPE TEIXEIRA MARINHO","tipo":"PACOTE","veiculo":"FIORINO R3","contrato":"ENVIOS FLEX","valor":113.0},{"nome":"MRJG1294- ENIDEILON RICARDO LOPES DE OLIVEIRA","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":170.0},{"nome":"MRJG1297 - RICARDO CAMPOS FLORES","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":366.5},{"nome":"MRJG-1328- JORGE MARLON MOREIRA TROVOADA","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":266.0},{"nome":"MRJG1339 - RENAN TAVARES DO NASCIMENTO","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":143.0},{"nome":"MRJG1340 - MARCOS VINICIUS NOGUEIRA DE JESUS","tipo":"DIÁRIA","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":218.0},{"nome":"MRJG1401 - DOUGLAS LUANDERSON XAVIER DA COSTA","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":255.0},{"nome":"MRJG1405- PEDRO LUCAS DO NASCIMENTO SILVA SANTOS","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":160.0},{"nome":"MRJG1424 - VICTOR HUGO PEREIRA PIMENTA","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":144.0},{"nome":"MRJG1441-BARBARA APARECIDA FONTES BASTOS DE OLIVEIRA","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":170.0},{"nome":"MRJG1461- HUGO CABRAL IAT","tipo":"DIÁRIA","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":144.0},{"nome":"MRJG1470- EDSON DE ARAUJO CUNHA JUNIOR","tipo":"PACOTE","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":139.5},{"nome":"MRJG1474- JEFFERSON SILVA DOS SANTOS","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":310.0},{"nome":"MRJG1475- LEANDRO BARROS DA CONCEICAO","tipo":"DIÁRIA","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":212.0},{"nome":"MRJG1501- CAMILO CRISTOVAM BERTOLINO","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":165.0},{"nome":"MRJG1542-HEROS DA SILVA CLAUDIO","tipo":"PACOTE","veiculo":"MOTO","contrato":"GROWTH SUPLEMENTOS","valor":294.0},{"nome":"MRJG1549- EDGAR COELHO OLIVEIRA","tipo":"DIÁRIA + PACOTE","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":210.0},{"nome":"MRJG1558-RICHARD GONCALVES FERREIRA","tipo":"DIÁRIA","veiculo":"CARRO","contrato":"ENVIOS FLEX","valor":232.0},{"nome":"MRJG1590-THIAGO JACOME BATISTA","tipo":"DIÁRIA","veiculo":"MOTO","contrato":"ENVIOS FLEX","valor":190.0},{"nome":"MRJG1591- CINTHIA PARREIRA DA SILVA","tipo":"PACOTE","veiculo":"MOTO","contr

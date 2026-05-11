@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/public/codex/$1"
+    }
+  ],
+  "cleanUrls": true
+}
